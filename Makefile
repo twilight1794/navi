@@ -21,7 +21,7 @@ dist/navi: src/cli/%.o src/common/%.o
 clean:
 	rm -rf dist/*
 	find . -regex *.o -delete
-        find . -regex *.gch -delete
+	find . -regex *.gch -delete
 	find . -regex *.pot -delete
 	find . -regex *.mo -delete
 

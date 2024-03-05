@@ -1,6 +1,8 @@
 CC := gcc
 CFLAGS := -fPIC -Wall -Wextra -Wpedantic -std=c99
 
+.PHONY: all clean
+
 all: dist/navi dist/libnavi.so
 
 src/common/%.o: src/common/%.c
@@ -33,5 +35,3 @@ clean:
 
 src/cli/%.pot: src/cli/%.c
 	xgettext -k_ -j -lC -c -s -o $< $@.c
-
-.PHONY: clean

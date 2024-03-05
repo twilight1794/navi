@@ -28,6 +28,7 @@ int main(int argc, char **argv){
     .show_date = true,
     .show_time = true,
     .show_file = true,
+    .level = NAVI_LOG_DEBUG
   };
 
     int c;
@@ -40,6 +41,8 @@ int main(int argc, char **argv){
             case 'v':
                 version();
                 return 0;
+            case 'l':
+                break;
             case '?':
                printf("[navi] Unknown param -%c\n", optopt);
                break;
@@ -54,7 +57,6 @@ int main(int argc, char **argv){
 
     char* cmd = argv[optind];
     if (strcmp(cmd, "start")){
-      log_debug();
     } else if (strcmp(cmd, "package")){
     } else if (strcmp(cmd, "serve")){
     } else if (strcmp(cmd, "resource")){

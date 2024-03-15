@@ -14,10 +14,10 @@ src/cli/%.o: src/cli/%.c
 src/lib/%.o: src/lib/%.c
 	$(CC) -c $(CPPFLAGS) $(CFLAGS) $^ -o $@
 
-dist/libnavi.so: src/lib/%.o src/common/%.o
+dist/libnavi.so: src/lib/*.o src/common/*.o
 	$(CC) -shared $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
-dist/navi: src/cli/%.o src/common/%.o
+dist/navi: src/cli/*.o src/common/*.o
 	$(CC) $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
 
 clean:

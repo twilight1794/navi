@@ -10,6 +10,7 @@ typedef struct {
     bool show_date;
     bool show_time;
     bool show_file;
+    int level;
 } Navi_log_config;
 
 enum { NAVI_LOG_DEBUG, NAVI_LOG_INFO, NAVI_LOG_WARN, NAVI_LOG_ERROR, NAVI_LOG_FATAL };

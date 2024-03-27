@@ -8,7 +8,7 @@
 
 #define _(STRING) gettext(STRING)
 
-opterr = 0;
+int opterr = 0;
 
 void help(char* name){
     printf("%s [-v|-h|COMMAND]\n", name);
@@ -23,7 +23,7 @@ void version(){
 }
 
 int main(int argc, char **argv){
-  Navi_log_config log_cfg = {
+  Navi_Log_Config log_cfg = {
     .use_color = true,
     .show_date = true,
     .show_time = true,

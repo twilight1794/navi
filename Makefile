@@ -12,7 +12,7 @@ all: dist/navi dist/libnavi.so
 
 MODS_CLI := main
 MODS_COMMON := cadena log
-MODS_LIB :=
+MODS_LIB := init
 
 # src/common/*.o: src/common/*.c
 $(addprefix src/common/,$(addsuffix .o,$(MODS_COMMON))): $(addprefix src/common/,$(addsuffix .c,$(MODS_COMMON)))
@@ -33,7 +33,7 @@ $(addprefix src/lib/,$(addsuffix .o,$(MODS_LIB))): $(addprefix src/lib/,$(addsuf
 	mv *.o src/lib/
 
 # dist/libnavi.so: src/lib/*.o src/common/*.o
-dist/libnavi.so: $(addprefix src/common/,$(addsuffix .o,$(MODS_LIB))) $(addprefix src/common/,$(addsuffix .o,$(MODS_COMMON)))
+dist/libnavi.so: $(addprefix src/lib/,$(addsuffix .o,$(MODS_LIB))) $(addprefix src/common/,$(addsuffix .o,$(MODS_COMMON)))
 	@mkdir -p dist
 	$(CC) -shared -fPIC $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
 

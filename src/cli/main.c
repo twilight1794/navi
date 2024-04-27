@@ -1,7 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
-#include <getopt.h>
 #include <libintl.h>
 
 #include "../common/log.h"
@@ -10,10 +9,10 @@
 
 #define NAVI_VERSION "1.0"
 
-int opterr = 0;
-
 void help(char* name){
-    printf("%s [-v|-h|COMMAND]\n", name);
+    printf("Usage: %s COMMAND [params]\n", name);
+    printf("COMMAND=[init|package|serve|resource|lint|clean|config|help|version]\n\n");
+    printf("For more info, see the man pages\n");
 }
 
 void version(){
@@ -33,40 +32,26 @@ int main(int argc, char **argv){
         .level = NAVI_LOG_DEBUG
     };
 
-    int c;
-    // Parametros estándar
-    while ((c = getopt(argc, argv, "hv")) != -1){
-        switch (c){
-            case 'h':
-                help(argv[0]);
-                break;
-            case 'v':
-                version();
-                return 0;
-            case 'l':
-                break;
-            case '?':
-               printf("[navi] Unknown param -%c\n", optopt);
-               break;
-        }
-    }
-
     // Comandos
-    if (argc == optind){
-      log_error(&log_cfg, _("No se especificó un comando."));
+    if (argc == 1){
+      log_error(&log_cfg, _("A command was not specified."));
       exit(EXIT_FAILURE);
     }
 
-    char* cmd = argv[optind];
-    if (strcmp(cmd, "init")){
-    } else if (strcmp(cmd, "package")){
-    } else if (strcmp(cmd, "serve")){
-    } else if (strcmp(cmd, "resource")){
-    } else if (strcmp(cmd, "lint")){
-    } else if (strcmp(cmd, "clean")){
-    } else if (strcmp(cmd, "config")){
+    if (!strcmp(argv[1], "init")){
+    } else if (!strcmp(argv[1], "package")){
+    } else if (!strcmp(argv[1], "serve")){
+    } else if (!strcmp(argv[1], "resource")){
+    } else if (!strcmp(argv[1], "lint")){
+    } else if (!strcmp(argv[1], "clean")){
+    } else if (!strcmp(argv[1], "config")){
+    } else if (!strcmp(argv[1], "help")){
+        help(argv[0]);
+    } else if (!strcmp(argv[1], "version")){
+        version();
     } else {
-        log_fatal(&log_cfg, _("No se reconoció el comando especificado"));
+        log_fatal(&log_cfg, _("The specified command was not recognized."));
+        exit(EXIT_FAILURE);
     }
 
     return 0;

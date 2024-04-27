@@ -29,7 +29,7 @@ int main(int argc, char **argv){
         .use_color = true,
         .show_date = true,
         .show_time = true,
-        .show_file = true,
+        .show_file = false,
         .level = NAVI_LOG_DEBUG
     };
 
@@ -66,6 +66,7 @@ int main(int argc, char **argv){
     } else if (strcmp(cmd, "clean")){
     } else if (strcmp(cmd, "config")){
     } else {
+        log_fatal(&log_cfg, _("No se reconoció el comando especificado"));
     }
 
     return 0;

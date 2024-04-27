@@ -1,12 +1,14 @@
 #include <stdio.h>
+#include <stdlib.h>
 #include <string.h>
 #include <getopt.h>
 #include <libintl.h>
 
-#include "navidefs.h"
 #include "../common/log.h"
 
 #define _(STRING) gettext(STRING)
+
+#define NAVI_VERSION "1.0"
 
 int opterr = 0;
 
@@ -23,13 +25,13 @@ void version(){
 }
 
 int main(int argc, char **argv){
-  Navi_Log_Config log_cfg = {
-    .use_color = true,
-    .show_date = true,
-    .show_time = true,
-    .show_file = true,
-    .level = NAVI_LOG_DEBUG
-  };
+    Navi_Log_Config log_cfg = {
+        .use_color = true,
+        .show_date = true,
+        .show_time = true,
+        .show_file = true,
+        .level = NAVI_LOG_DEBUG
+    };
 
     int c;
     // Parametros estándar
@@ -52,14 +54,19 @@ int main(int argc, char **argv){
     // Comandos
     if (argc == optind){
       log_error(&log_cfg, _("No se especificó un comando."));
-      return 1;
+      exit(EXIT_FAILURE);
     }
 
     char* cmd = argv[optind];
-    if (strcmp(cmd, "start")){
+    if (strcmp(cmd, "init")){
     } else if (strcmp(cmd, "package")){
     } else if (strcmp(cmd, "serve")){
     } else if (strcmp(cmd, "resource")){
+    } else if (strcmp(cmd, "lint")){
+    } else if (strcmp(cmd, "clean")){
+    } else if (strcmp(cmd, "config")){
+    } else {
     }
+
     return 0;
 }

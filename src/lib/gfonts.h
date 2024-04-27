@@ -24,13 +24,13 @@ char* NAVI_GFONTS_ITALIC = "ital";
 /**
  * Errores
  */
-enum Navi_GFonts_Error {
+typedef enum {
     NAVI_GFONTS_ERR_INVALID_OBJ, /**< Puntero a objeto inválido */
     NAVI_GFONTS_ERR_INVALID_DISP, /**< Valor para font-display inválido */
     NAVI_GFONTS_ERR_NOAXES, /**< No se incluyeron ejes a especificar */
     NAVI_GFONTS_ERR_INVALID_AXIS_SIZE, /**< La etiqueta de un eje sobrepasa el tamaño permitido */
-    NAVI_GFONTS_ERR_INVALID_AXIS_NAME, /**< La etoqieta de un eje tiene caracteres inválidos*/
-};
+    NAVI_GFONTS_ERR_INVALID_AXIS_NAME, /**< La etiqueta de un eje tiene caracteres inválidos */
+} Navi_GFonts_Error;
 
 /**
  * Valor para un eje de familia tipográfica

@@ -1,6 +1,7 @@
 CC := gcc
 CFLAGS := -fPIC -Wall -Wextra -Wpedantic -funsigned-char -std=c99
-LDFLAGS := 
+CPPFLAGS := -I/usr/include/libxml2
+LDLIBS := -lxml2
 RM := rm -rf
 BINDIR := /usr/local/bin
 LIBDIR := /usr/local/lib
@@ -35,12 +36,12 @@ $(addprefix src/lib/,$(addsuffix .o,$(MODS_LIB))): $(addprefix src/lib/,$(addsuf
 # dist/libnavi.so: src/lib/*.o src/common/*.o
 dist/libnavi.so: $(addprefix src/lib/,$(addsuffix .o,$(MODS_LIB))) $(addprefix src/common/,$(addsuffix .o,$(MODS_COMMON)))
 	@mkdir -p dist
-	$(CC) -shared -fPIC $(LDFLAGS) $^ $(LOADLIBES) $(LDLIBS) -o $@
+	$(CC) -shared -fPIC $(LDFLAGS) $^ $(LDLIBS) -o $@
 
 # dist/navi: src/cli/*.o
 dist/navi: dist/libnavi.so $(addprefix src/cli/,$(addsuffix .o,$(MODS_CLI)))
 	@mkdir -p dist
-	$(CC) $(LDFLAGS) $^ -L dist -lnavi $(LOADLIBES) $(LDLIBS) -o $@
+	$(CC) $(LDFLAGS) $^ -L dist -lnavi $(LDLIBS) -o $@
 
 #po/fr/$(EXEC).mo: po/fr/$(EXEC).po
 #    msgfmt --output-file=$@ $<

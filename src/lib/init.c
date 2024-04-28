@@ -9,6 +9,19 @@
     }
 
 void Navi_Init(char* pname, int* error){
+    // Crear identificador
+    // TODO: Debemos pedir uno siempre
+    char proj_uri[22];
+    strcpy(proj_uri, "uri:navi:");
+    proj_uri[21] = 0;
+    srand(time(NULL));
+    for (int i=9; i<22; ++i){
+        //0x30-0x39,0x61-0x7A=36
+        proj_uri[i] = rand()%36;
+        if (proj_uri[i]<10) proj_uri[i] += 0x30;
+        else proj_uri[i] += 0x57; //0x57=0x61-10d
+    }
+
     // Crear directorio
     if (mkdir(pname, 0777)){
         *error = 0xfe;
@@ -39,4 +52,30 @@ void Navi_Init(char* pname, int* error){
     CREATE_DIR(NAVI_PATH_VIDEO)
 
     // Preparar project.xml
+    LIBXML_TEST_VERSION;
+    strcpy(path_suf, NAVI_PATH_PROJECT);
+    xmlDocPtr doc = xmlNewDoc(BAD_CAST "1.0");
+    xmlNodePtr root_node = xmlNewNode(NULL, BAD_CAST "RDF");
+    xmlNsPtr ns_navi = xmlNewNs(root_node, BAD_CAST "https://www.campanita.xyz/proyectos/navi#", NULL);
+    xmlNsPtr ns_rdf = xmlNewNs(root_node, BAD_CAST "http://www.w3.org/1999/02/22-rdf-syntax-ns#", BAD_CAST "rdf");
+    xmlSetNs(root_node, ns_rdf);
+    xmlDocSetRootElement(doc, root_node);
+    xmlNodePtr real_root = xmlNewChild(root_node, ns_rdf, BAD_CAST "Description", NULL);
+    xmlNewNsProp(real_root, ns_rdf, BAD_CAST "about", BAD_CAST proj_uri);
+
+    // Rellenar datos
+    xmlNodePtr proj_title = xmlNewChild(real_root, ns_navi, BAD_CAST "title", NULL);
+    xmlNewNsProp(proj_title, ns_rdf, BAD_CAST "resource", NULL);
+    xmlNodePtr proj_icon = xmlNewChild(real_root, ns_navi, BAD_CAST "icon", NULL);
+    xmlNewNsProp(proj_icon, ns_rdf, BAD_CAST "resource", NULL);
+    xmlNodePtr proj_maintheme = xmlNewChild(real_root, ns_navi, BAD_CAST "main-theme", NULL);
+    xmlNewNsProp(proj_maintheme, ns_rdf, BAD_CAST "value", BAD_CAST "system");
+
+    // Guardar y cerrar todo
+    xmlSaveFormatFileEnc(path_created, doc, "UTF-8", 1);
+    xmlFreeDoc(doc);
+    xmlCleanupParser();
+
+    free(path_created);
+    return;
 }

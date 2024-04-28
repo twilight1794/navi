@@ -8,8 +8,12 @@
 
 #include <stdlib.h>
 #include <string.h>
+#include <time.h>
 #include <unistd.h>
 #include <sys/stat.h>
+
+#include <libxml/parser.h>
+#include <libxml/tree.h>
 
 #include "paths.h"
 

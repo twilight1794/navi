@@ -1,4 +1,4 @@
-![Logo](https://gitlab.com/campanita/navi/-/raw/main/doc/isologo.svg)
+![Logo](https://raw.githubusercontent.com/twilight1794/navi/main/doc/isologo.svg)
 
 # Navi
 
@@ -11,13 +11,13 @@ Navi es un framework web para crear clientes web con el menor esfuerzo posible. 
 - **Adaptabilidad**: Navi gestiona por sí mismo la responsividad de la página, y creará automáticamente el código para ello.
 - **Código limpio**: a diferencia de otros sistemas, Navi generará el menor código posible, para mantener una aplicación ligera y fácil de modificar después.
 - **Vistas previas**: Navi te permitirá servir tu aplicación mientras la desarrollas —y la actualizará cada que hagas un cambio—.
-- **IDE incluido**: puedes desarrollar tus aplicaciones en un IDE específicamente diseñado para trabajar con Navi: prueba [Navi Studio](https://gitlab.com/campanita/navi/).
+- **IDE incluido**: puedes desarrollar tus aplicaciones en un IDE específicamente diseñado para trabajar con Navi: prueba [Navi Studio](https://github.com/twilight1794/navi-studio).
 
 ## Instalación
 
 Para compilar el código fuente, necesitarás la biblioteca libxml2.
 
-Clona el proyecto, o [descarga un tarball](https://gitlab.com/campanita/navi/-/archive/main/navi-main.tar).
+Clona el proyecto, o [descarga un tarball](https://github.com/twilight1794/navi/archive/refs/heads/main.zip)
 
 ```bash
   make

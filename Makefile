@@ -13,7 +13,7 @@ all: dist/navi dist/libnavi.so
 
 MODS_CLI := main
 MODS_COMMON := cadena log
-MODS_LIB := init
+MODS_LIB := init gfonts
 
 # src/common/*.o: src/common/*.c
 $(addprefix src/common/,$(addsuffix .o,$(MODS_COMMON))): $(addprefix src/common/,$(addsuffix .c,$(MODS_COMMON)))
@@ -62,7 +62,7 @@ remove:
 
 clean:
 	$(RM) dist/*
-	find . -regex *.o -delete
-	find . -regex *.gch -delete
-	find . -regex *.pot -delete
-	find . -regex *.mo -delete
+	find . -regex .*\\.o -delete
+	find . -regex .*\\.gch -delete
+	find . -regex .*\\.pot -delete
+	find . -regex .*\\.mo -delete

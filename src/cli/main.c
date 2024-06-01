@@ -5,6 +5,7 @@
 
 #include "../common/log.h"
 #include "../lib/init.h"
+#include "../lib/gfonts.h"
 
 #define _(STRING) gettext(STRING)
 
@@ -25,7 +26,9 @@ void f_version(){
 }
 
 int main(int argc, char **argv){
-    Navi_Log_Config log_cfg = {
+
+    // Configuracion de logs
+    struct Navi_Log_Config log_cfg = {
         .use_color = true,
         .show_date = true,
         .show_time = true,
@@ -38,6 +41,7 @@ int main(int argc, char **argv){
       log_error(&log_cfg, _("A command was not specified."));
       exit(EXIT_FAILURE);
     }
+
 
     if (!strcmp(argv[1], "init")){
         if (argc < 3){

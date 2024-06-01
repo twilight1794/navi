@@ -24,47 +24,47 @@ char* NAVI_GFONTS_ITALIC = "ital";
 /**
  * Errores
  */
-typedef enum {
+enum Navi_GFonts_Error {
     NAVI_GFONTS_ERR_INVALID_OBJ, /**< Puntero a objeto inválido */
     NAVI_GFONTS_ERR_INVALID_DISP, /**< Valor para font-display inválido */
-    NAVI_GFONTS_ERR_NOAXES, /**< No se incluyeron ejes a especificar */
+    NAVI_GFONTS_ERR_NOAXES, /**< No se incluyeron ejes a especificar, y sí valores */
     NAVI_GFONTS_ERR_INVALID_AXIS_SIZE, /**< La etiqueta de un eje sobrepasa el tamaño permitido */
     NAVI_GFONTS_ERR_INVALID_AXIS_NAME, /**< La etiqueta de un eje tiene caracteres inválidos */
-} Navi_GFonts_Error;
+};
 
 /**
  * Valor para un eje de familia tipográfica
  */
-typedef struct {
-    bool isRange;
+struct Navi_GFonts_Value {
+    bool isRange; /**< Especifica si el valor es puntual, o es un rango */
     union {
-        float val;
-        float valStart;
+        float val; /**< Valor puntual */
+        float valStart; /**< Valor mínimo en un rango */
     } valU;
-    float valEnd;
-} Navi_GFonts_Value;
+    float valEnd; /**< Valor máximo en un rango */
+};
 
 /**
  * Objeto de configuración para una familia tipográfica
  */
-typedef struct {
+struct Navi_GFonts_Family {
     char *name; /**< Nombre de la familia tipográfica */
-    int n_axes; /**< Número ejes especificados */
+    int n_axes; /**< Número de ejes especificados */
     int n_values; /**< Número de combinaciones de valores especificados */
     char **axes; /**< Array de cadenas con los ejes especificados */
-    Navi_GFonts_Value **values; /**< Array de arrays de valores para los ejes */
-} Navi_GFonts_Family;
+    struct Navi_GFonts_Value **values; /**< Array de arrays de valores para los ejes */
+};
 
 /**
  * Valor para la propiedad font-display
  */
-typedef enum {
+enum Navi_GFonts_Display {
     NAVI_GFONTS_AUTO,
     NAVI_GFONTS_BLOCK,
     NAVI_GFONTS_SWAP,
     NAVI_GFONTS_FALLBACK,
     NAVI_GFONTS_OPTIONAL
-} Navi_GFonts_Display;
+};
 
 /**
  * Genera la URL para cargar un recurso de fuente desde Google Fonts
@@ -76,8 +76,8 @@ typedef enum {
  */
 char* navi_get_url_gfonts(
   int n_familias,
-  const Navi_GFonts_Family** familias,
-  Navi_GFonts_Display display,
+  const struct Navi_GFonts_Family** familias,
+  enum Navi_GFonts_Display display,
   int* error);
 
 #endif

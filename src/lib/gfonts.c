@@ -18,8 +18,8 @@
 
 char* navi_get_url_gfonts(
   int n_familias,
-  const Navi_GFonts_Family** familias,
-  Navi_GFonts_Display display,
+  const struct Navi_GFonts_Family** familias,
+  enum Navi_GFonts_Display display,
   int* error){
 
     if (familias == NULL || *familias == NULL){
@@ -33,16 +33,15 @@ char* navi_get_url_gfonts(
 
     char* url = Cadena_Create();
     url = Cadena_Concat(url, "https://fonts.googleapis.com/css2?");
-    char bufc[5]; // Para usar en Procesar nombre
+    char bufc; // Para usar en Procesar nombre
 
     for (int i=0; i<n_familias; i++){
         // Procesar nombre
         url = Cadena_Concat(url, "family=");
         char* c = (familias[i])->name;
         while (*c){
-            memset(bufc, 0, 5);
-            bufc[0] = ((*c)==' ')?'+':(*c);
-            url = Cadena_Add(url, bufc); // Substituir ' ' por '+'
+            bufc = ((*c)==' ')?'+':(*c);
+            url = Cadena_Add(url, &bufc); // Substituir ' ' por '+'
             c++;
         }
         // Procesar valores
@@ -81,7 +80,7 @@ char* navi_get_url_gfonts(
             url = Cadena_Concat(url, "@");
 
             // Procesar conjuntos de valores
-            Navi_GFonts_Value** vals = (familias[i])->values;
+            struct Navi_GFonts_Value** vals = (familias[i])->values;
             for (int j=0; j<(familias[i])->n_values; j++){
                 for (int k=0; k<(familias[i])->n_axes; k++){
                     if ((vals[j])->isRange){
@@ -96,5 +95,26 @@ char* navi_get_url_gfonts(
     }
     // Quitar & si es último caracter
     if (url[strlen(url)-1] == '&') url = Cadena_Remove(url);
+
+    // Añadir display
+    url = Cadena_Concat(url, "&display=");
+    switch (display){
+        case NAVI_GFONTS_AUTO:
+            url = Cadena_Concat(url, "auto");
+            break;
+        case NAVI_GFONTS_BLOCK:
+            url = Cadena_Concat(url, "block");
+            break;
+        case NAVI_GFONTS_SWAP:
+            url = Cadena_Concat(url, "swap");
+            break;
+        case NAVI_GFONTS_FALLBACK:
+            url = Cadena_Concat(url, "fallback");
+            break;
+        case NAVI_GFONTS_OPTIONAL:
+            url = Cadena_Concat(url, "optional");
+            break;
+    }
+
     return url;
 }

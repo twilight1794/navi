@@ -19,15 +19,10 @@
 char* navi_get_url_gfonts(
   int n_familias,
   const struct Navi_GFonts_Family** familias,
-  enum Navi_GFonts_Display display,
-  int* error){
+  enum Navi_GFonts_Display display){
 
     if (familias == NULL || *familias == NULL){
-        *error = NAVI_GFONTS_ERR_INVALID_OBJ;
-        return NULL;
-    }
-    if (display<0 || display>4){
-        *error = NAVI_GFONTS_ERR_INVALID_DISP;
+        errno = NAVI_GFONTS_ERR_INVALID_OBJ;
         return NULL;
     }
 
@@ -51,21 +46,21 @@ char* navi_get_url_gfonts(
             // Validar ejes
             if (!(familias[i])->n_axes){
                 free(url);
-                *error = NAVI_GFONTS_ERR_NOAXES;
+                errno = NAVI_GFONTS_ERR_NOAXES;
                 return NULL;
             }
             for (int j=0; j<(familias[i])->n_axes; j++){
                 char* axis = (familias[i])->axes[j];
                 if (strlen(axis) > 4){
                     free(url);
-                    *error = NAVI_GFONTS_ERR_INVALID_AXIS_SIZE;
+                    errno = NAVI_GFONTS_ERR_INVALID_AXIS_SIZE;
                     return NULL;
                 }
                 c = axis;
                 while (*c){
                     if (isupper(*c) || islower(*c)){
                         free(url);
-                        *error = NAVI_GFONTS_ERR_INVALID_AXIS_NAME;
+                        errno = NAVI_GFONTS_ERR_INVALID_AXIS_NAME;
                         return NULL;
                     }
                 }
@@ -114,6 +109,10 @@ char* navi_get_url_gfonts(
         case NAVI_GFONTS_OPTIONAL:
             url = Cadena_Concat(url, "optional");
             break;
+        default:
+            free(url);
+            errno = NAVI_GFONTS_ERR_INVALID_DISPLAY;
+            return NULL;
     }
 
     return url;

@@ -7,12 +7,14 @@
 #ifndef NAVI_L_GFONTS
 #define NAVI_L_GFONTS
 
+#include <ctype.h>
+#include <errno.h>
 #include <stdbool.h>
 #include <stdlib.h>
 #include <string.h>
-#include <ctype.h>
 
 #include "../common/cadena.h"
+#include "../common/error.h"
 
 // Valores de conveniencia para dev
 char* NAVI_GFONTS_WEIGHT = "wght";
@@ -20,17 +22,6 @@ char* NAVI_GFONTS_WIDTH = "wdth";
 char* NAVI_GFONTS_SLANT = "slnt";
 char* NAVI_GFONTS_OPSIZE = "opsz";
 char* NAVI_GFONTS_ITALIC = "ital";
-
-/**
- * Errores
- */
-enum Navi_GFonts_Error {
-    NAVI_GFONTS_ERR_INVALID_OBJ, /**< Puntero a objeto inválido */
-    NAVI_GFONTS_ERR_INVALID_DISP, /**< Valor para font-display inválido */
-    NAVI_GFONTS_ERR_NOAXES, /**< No se incluyeron ejes a especificar, y sí valores */
-    NAVI_GFONTS_ERR_INVALID_AXIS_SIZE, /**< La etiqueta de un eje sobrepasa el tamaño permitido */
-    NAVI_GFONTS_ERR_INVALID_AXIS_NAME, /**< La etiqueta de un eje tiene caracteres inválidos */
-};
 
 /**
  * Valor para un eje de familia tipográfica
@@ -71,13 +62,11 @@ enum Navi_GFonts_Display {
  * @param[in] n_familias Número de familias tipográficas a solicitar
  * @param[in] familias Lista de configuraciones para una tipografía
  * @param[in] display Valor para la propiedad font-display
- * @param[out] error Error ocurrido, si lo hubo
  * @return Cadena conteniendo la URL para cargar la fuente
  */
 char* navi_get_url_gfonts(
   int n_familias,
   const struct Navi_GFonts_Family** familias,
-  enum Navi_GFonts_Display display,
-  int* error);
+  enum Navi_GFonts_Display display);
 
 #endif

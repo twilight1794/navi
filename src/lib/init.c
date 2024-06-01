@@ -4,11 +4,11 @@
 #define CREATE_DIR(a)\
     strcpy(path_suf, a);\
     if (mkdir(path_created, 0777)){\
-        *error = 0xff;\
+        errno = NAVI_INIT_ERR_SUBDIR;\
         return;\
     }
 
-void Navi_Init(char* pname, int* error){
+void Navi_Init(char* pname){
     // Crear identificador
     // TODO: Debemos pedir uno siempre
     char proj_uri[22];
@@ -24,7 +24,7 @@ void Navi_Init(char* pname, int* error){
 
     // Crear directorio
     if (mkdir(pname, 0777)){
-        *error = 0xfe;
+        errno = NAVI_INIT_ERR_DIRPROJ;
         return;
     }
 

@@ -16,6 +16,7 @@ char* Cadena_Add(char* cad, const char* c){
       ncad[tcad+i] = c[i];
       i++;
     }
+    ncad[tcad+tcar] = 0;
     return ncad;
 }
 
@@ -31,6 +32,7 @@ char* Cadena_Concat(char* cad, const char* cad2){
       ncad[tcad+i] = cad2[i];
       i++;
     }
+    ncad[tcad+tcad2] = 0;
     return ncad;
 }
 

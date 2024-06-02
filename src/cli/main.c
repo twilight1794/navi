@@ -1,6 +1,8 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <string.h>
+#include <getopt.h>
+
 #include <libintl.h>
 
 #include "../common/log.h"
@@ -12,9 +14,18 @@
 #define NAVI_VERSION "1.0"
 
 void f_help(char* name){
-    printf("Usage: %s COMMAND [params]\n", name);
-    printf("COMMAND=[init|package|serve|resource|lint|clean|config|help|version]\n\n");
-    printf("For more info, see the man pages\n");
+    printf(_("Usage: %s <command> [<params>]\n\n"), name);
+    puts(_("This is a list of available commands:"));
+    puts(_(" init      Create a new Navi project"));
+    puts(_(" package   Export a bundle ready to be published"));
+    puts(_(" serve     Run a simple live web server to serve the project"));
+    puts(_(" resource  Manage the files of the project"));
+    puts(_(" lint      Search for errors and things to improve in the project"));
+    puts(_(" clean     Remove files that aren't related to the project"));
+    puts(_(" config    Show or set options of the project"));
+    puts(_(" help      Show this help"));
+    puts(_(" version   Show the Navi version"));
+    puts(_("\nFor more info, see the man pages."));
 }
 
 void f_version(){
@@ -36,40 +47,54 @@ int main(int argc, char **argv){
         .level = NAVI_LOG_DEBUG
     };
 
-    // Comandos
-    if (argc == 1){
-      log_error(&log_cfg, _("A command was not specified."));
-      exit(EXIT_FAILURE);
+    // Parámetros
+    int c;
+    unsigned char opts = 0;
+    opterr = 0;
+    while ((c = getopt(argc, argv, "delnu")) != -1){
+        if (c == 'd') opts |= 1;
+        else if (c == 'e') opts |= 2;
+        else if (c == 'l') opts |= 4;
+        else if (c == 'n') opts |= 8;
+        else if (c == 'u') opts |= 16;
+        else if (c == 'w') opts |= 32;
     }
 
+    // Subcomandos
+    char* subcom;
+    if (optind == argc){
+        log_error(&log_cfg, _("A command was not specified."));
+        exit(EXIT_FAILURE);
+    } else subcom = argv[optind++];
 
-    if (!strcmp(argv[1], "init")){
-        if (argc < 3){
+    if (!strcmp(subcom, "init")){
+        if (optind == argc){
             log_fatal(&log_cfg, _("The project name was not specified."));
             exit(EXIT_FAILURE);
         } else {
-            int error = 0;
-            Navi_Init(argv[2], &error);
-            if (error == 0xfe){ // FIX: Códigos de error
+            Navi_Init(argv[optind]);
+            if (errno == NAVI_INIT_ERR_DIRPROJ){
                 log_fatal(&log_cfg, _("The project directory can not be created."));
                 exit(EXIT_FAILURE);
-            } else if (error == 0xff){
+            } else if (errno == NAVI_INIT_ERR_SUBDIR){
                 log_fatal(&log_cfg, _("A directory inside the project directory can not be created."));
                 exit(EXIT_FAILURE);
             }
         }
-    } else if (!strcmp(argv[1], "package")){
-    } else if (!strcmp(argv[1], "serve")){
-    } else if (!strcmp(argv[1], "resource")){
-    } else if (!strcmp(argv[1], "lint")){
-    } else if (!strcmp(argv[1], "clean")){
-    } else if (!strcmp(argv[1], "config")){
-    } else if (!strcmp(argv[1], "help")){
+    } else if (!strcmp(subcom, "package")){
+    } else if (!strcmp(subcom, "serve")){
+    } else if (!strcmp(subcom, "resource")){
+    } else if (!strcmp(subcom, "lint")){
+    } else if (!strcmp(subcom, "clean")){
+    } else if (!strcmp(subcom, "config")){
+    } else if (!strcmp(subcom, "help")){
         f_help(argv[0]);
-    } else if (!strcmp(argv[1], "version")){
+    } else if (!strcmp(subcom, "version")){
         f_version();
     } else {
-        log_fatal(&log_cfg, _("The specified command was not recognized."));
+        char msg[100];
+        snprintf(msg, 99, _("The command %s was not recognized."), subcom);
+        log_fatal(&log_cfg, msg);
         exit(EXIT_FAILURE);
     }
 

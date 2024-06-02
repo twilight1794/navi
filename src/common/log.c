@@ -1,6 +1,6 @@
 #include "log.h"
 
-void navi_log(Navi_Log_Config* conf, int type, const char* file, unsigned int line, const char* msg){
+void navi_log(struct Navi_Log_Config* conf, int type, const char* file, unsigned int line, const char* msg){
 
     // Fecha-hora
     time_t rawtime;

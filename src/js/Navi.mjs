@@ -228,15 +228,15 @@ export default class Navi {
     // Obtener clase a llamar
     var activity_class = this.get_view_by_uri(uri);
     if (!activity_class){
-      console.error(`La URI #${uri} no llama a ninguna actividad.`);
+      console.error(`La URI #${uri} no puede ser procesada por ninguna actividad.`);
       return;
     }
     // Comprobar que no exista otra instancia
-    if (!this.#states.every(e => e.constructor.name == activity_class)){
-      console.log("Se puede hacer el cambio!");
-    } else {
-      console.error(`Ya has creado otra actividad de la clase ${activity_class}`);
-    }
+    //if (!this.#states.every(e => e.constructor.name == activity_class)){
+    //  console.log("Se puede hacer el cambio!");
+    //} else {
+    //  console.error(`Ya has creado otra actividad de la clase ${activity_class}`);
+    //}
     let aid = 0;
     // lanzar evento
     window.dispatchEvent(new PopStateEvent("popstate", {'state': { 'aid': aid}}));

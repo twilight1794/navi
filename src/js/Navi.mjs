@@ -10,7 +10,6 @@ export default class Navi {
   #states;
   #current_state_index;
   #aid_seq;
-  //#previous_uri;
 
   constructor(){
     // Caché de objetos
@@ -36,7 +35,6 @@ export default class Navi {
     let aid = ++this.#aid_seq;
 
     // Crear instancia de actividad
-    console.log(activity_class);
     let activity_obj = new activity_class(aid, ctx);
 
     // Agregar a la lista de actividades
@@ -62,6 +60,8 @@ export default class Navi {
       activity_elem.id = `aid-${aid}`;
       document.body.appendChild(activity_elem);
     }
+    let previous_view = document.querySelector("[aria-current='page']");
+    if (previous_view) previous_view.ariaCurrent = undefined;
     activity_elem.ariaCurrent = "page";
     activity_obj.on_show();
   }
@@ -113,7 +113,7 @@ export default class Navi {
       // Lanzado cuando el usuario se mueve en el historial
       window.addEventListener("popstate", (e) => {
         console.debug(`popstate: ${e.state}`);
-        
+
         // Comprobar si existe AID
         if (!e.state || !e.state.aid){
           // AID inespecificado: estoy entrando
@@ -256,7 +256,7 @@ export default class Navi {
 
     // Crear actividad
     let aid = this.#activity_create(activity_class, new URLSearchParams(uri));
-    history.pushState({ "aid": aid }, null, uri);
+    history.pushState({ "aid": aid }, null, "#"+uri);
     this.#activity_show(aid);
     console.debug(`Actividad ${location.pathname}`);
   }

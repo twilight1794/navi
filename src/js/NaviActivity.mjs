@@ -24,8 +24,6 @@ export default class NaviActivity {
    */
   on_show(result){
     console.debug(`Mostrando actividad ${this.constructor.name}`);
-    // Por mientras:
-    document.querySelector("[aria-current='page']").ariaCurrent = undefined;
   }
 
   /**

@@ -8,8 +8,9 @@ export default class Navi {
   #views_cache;
   #uri_regexes;
   #states;
+  #current_state_index;
   #aid_seq;
-  #previous_uri;
+  //#previous_uri;
 
   constructor(){
     // Caché de objetos
@@ -17,26 +18,33 @@ export default class Navi {
     this.#views_cache = {};
     this.#uri_regexes = {};
 
-    this.#states = []; // Estados de actividades
+    this.#states = []; // Pila de estados
+    this.#current_state_index = 0; // Puntero al estado actual
     this.#aid_seq = 0; // Secuencia de AIDs
   }
 
   // Funciones de bajo nivel
   //
   // Estas funciones no deben comprobar errores del usuario: en este punto, ya
-  // deben haberse validado la entrada del usuario
+  // debe haberse validado la entrada del usuario
 
   /**
    * Crea una nueva instancia de una actividad
-   * @param activity_name Nombre de la clase de la cual se creará la actividad
+   * @param activity_name Clase de la cual se creará la actividad
    */
-  #activity_create(activity_name){
+  #activity_create(activity_class, ctx){
     let aid = ++this.#aid_seq;
 
     // Crear instancia de actividad
-    let activity_class = this.#activities_cache[activity_name];
-    let activity_obj = new activity_class(aid);
-    this.#states.push(activity_obj);
+    console.log(activity_class);
+    let activity_obj = new activity_class(aid, ctx);
+
+    // Agregar a la lista de actividades
+    //   Si anadimos actividades en medio de la pila, los estados siguientes ya
+    // ↓ no serán válidos
+    this.#states.splice(this.#current_state_index, Infinity, activity_obj);
+    this.#current_state_index++;
+
     activity_obj.on_create();
     return aid;
   }
@@ -60,6 +68,7 @@ export default class Navi {
 
   /**
    * Oculta una actividad al usuario
+   * @param aid AID de la actividad a mostrar
    */
   #activity_hide(aid){
     let activity_elem = document.querySelector("[aria-current='page']");
@@ -72,6 +81,7 @@ export default class Navi {
 
   /**
    * Inicia el tratamiento de excepciones en la actividad
+   * @param aid AID de la actividad a mostrar
    */
   #activity_fail(aid){
     //this.#activity_obj.on_fail();
@@ -79,9 +89,10 @@ export default class Navi {
 
   /**
    * Elimina una instancia de la actividad
+   * @param aid AID de la actividad a mostrar
    */
   #activity_destroy(aid){
-    // :Obtener actividad
+    // Obtener actividad
     let activity_elem = document.getElementById(`aid-${aid}`);
     activity_elem.parentNode.removeChild(activity_elem);
     let activity_obj = this.#states.find(e => aid == e.aid);
@@ -99,23 +110,25 @@ export default class Navi {
 
     // Definir eventos
     if (!document.body.dataset.events){
-      // Cuando el usuario se mueve en el historial
+      // Lanzado cuando el usuario se mueve en el historial
       window.addEventListener("popstate", (e) => {
         console.debug(`popstate: ${e.state}`);
-
-        // Comprobar si existe el AID pedido
-        if (e.state && e.state.aid && document.getElementById(`aid-${e.state.aid}`)){
-          // AID existente
-          
-          // iniciar
-        } else {
-          // AID inválido
+        
+        // Comprobar si existe AID
+        if (!e.state || !e.state.aid){
+          // AID inespecificado: estoy entrando
+          console.log("Estado inválido.");
+          return;
         }
-        
-        // Obtener AID del estado actual
-        let aid_actual = parseInt(document.querySelector("[aria-current='page']").id.substring(4));
-        
-        
+        // AID especificado: es un cambio en el mismo documento
+        // Validar AID
+        let tentative_state = this.#states.findIndex(e => e.aid == e.state.aid);
+        if (tentative_state == -1) history.back(); // AID es inválido
+        else {
+          // AID es válido
+          this.#current_state_index = tentative_state.aid;
+          tentative_state.on_show();
+        }
       });
 
       // Lanzado cuando el tamaño de la pantalla cambie
@@ -211,35 +224,41 @@ export default class Navi {
     })
     .then(() => {
       // ...e iniciar la primera cuando todo esté listo
-      this.#activity_show(this.#activity_create(acts[0].getAttribute("href")));
+      let activity_class = this.#activities_cache[acts[0].getAttribute("href")];
+      let activity_obj = this.#activity_create(activity_class);
+      this.#activity_show(activity_obj);
     });
   }
-  
+
   _acts(){ return this.#activities_cache; }
   _views(){ return this.#views_cache; }
   _regexes(){ return this.#uri_regexes; }
-  _states() {return this.#states; }
+  _states(){ return this.#states; }
 
   // Funciones de alto nivel: Navegación
   /**
    * Navega a una nueva actividad, en espera de devolver un resultado
+   * @param uri URI a visitar
    */
-  activity_call(uri, data){
+  activity_call(uri){
     // Obtener clase a llamar
-    var activity_class = this.get_view_by_uri(uri);
+    var activity_class = this.#get_view_by_uri(uri);
     if (!activity_class){
       console.error(`La URI #${uri} no puede ser procesada por ninguna actividad.`);
       return;
     }
+
+    //// Restricciones
     // Comprobar que no exista otra instancia
-    //if (!this.#states.every(e => e.constructor.name == activity_class)){
-    //  console.log("Se puede hacer el cambio!");
-    //} else {
-    //  console.error(`Ya has creado otra actividad de la clase ${activity_class}`);
-    //}
-    let aid = 0;
-    // lanzar evento
-    window.dispatchEvent(new PopStateEvent("popstate", {'state': { 'aid': aid}}));
+    if (activity_class.constructor.is_unique && !this.#states.every(e => e.constructor.name == activity_class)){
+      console.error(`Ya has creado otra actividad de la clase ${activity_class}`);
+    }
+
+    // Crear actividad
+    let aid = this.#activity_create(activity_class, new URLSearchParams(uri));
+    history.pushState({ "aid": aid }, null, uri);
+    this.#activity_show(aid);
+    console.debug(`Actividad ${location.pathname}`);
   }
 
   /**
@@ -256,11 +275,18 @@ export default class Navi {
     
   }
 
-  get_view_by_uri(uri){
-    return Object.keys(this.#activities_cache).find(e => uri.match(this.#uri_regexes[e]));
+  // Funciones auxiliares de bajo nivel
+  
+  /*
+   * Dada una URI, devuelve la primera vista que declara procesarla
+   * @param uri URI a cotejar
+   * @return Clase de la actividad coincidente
+   */
+  #get_view_by_uri(uri){
+    return Object.entries(this.#activities_cache).find(e => uri.match(this.#uri_regexes[e[0]]))[1];
   }
   
-  get_current_activity(){
+  #get_current_activity(){
   }
 }
 

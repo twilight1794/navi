@@ -3,11 +3,11 @@
 /**
  * Clase para una actividad
  */
-class NaviActivity {
+export default class NaviActivity {
 
-  constructor(aid){
-    /* AID = Activity ID */
-    this.aid = aid;
+  constructor(aid, ctx){
+    this.aid = aid; // AID = Activity ID
+    this.ctx = ctx; // Contexto
   }
 
   // Eventos del ciclo de vida
@@ -24,6 +24,8 @@ class NaviActivity {
    */
   on_show(result){
     console.debug(`Mostrando actividad ${this.constructor.name}`);
+    // Por mientras:
+    document.querySelector("[aria-current='page']").ariaCurrent = undefined;
   }
 
   /**
@@ -52,5 +54,11 @@ class NaviActivity {
    */
   on_destroy(){
     console.debug(`Destruyendo actividad ${this.constructor.name}`);
+  }
+
+  // Indica si de una vista solo podemos crear una sola actividad
+  static get is_unique(){
+    // En general, podremos crear varias actividades de una sola actividad.
+    return false;
   }
 }

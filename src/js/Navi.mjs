@@ -29,13 +29,16 @@ export default class Navi {
 
   /**
    * Crea una nueva instancia de una actividad
-   * @param activity_name Clase de la cual se creará la actividad
+   * @param activity_class Clase de la cual se creará la actividad
+   * @param params Parámetros pasados por la URI
+   * @param ctx Objetos pasados por código
    */
-  #activity_create(activity_class, ctx){
+  #activity_create(activity_class, params, ctx){
+    //let params = new URLSearchParams(hash);
     let aid = ++this.#aid_seq;
 
     // Crear instancia de actividad
-    let activity_obj = new activity_class(aid, ctx);
+    let activity_obj = new activity_class(aid, params, ctx);
 
     // Agregar a la lista de actividades
     //   Si anadimos actividades en medio de la pila, los estados siguientes ya
@@ -122,12 +125,14 @@ export default class Navi {
         }
         // AID especificado: es un cambio en el mismo documento
         // Validar AID
-        let tentative_state = this.#states.findIndex(e => e.aid == e.state.aid);
-        if (tentative_state == -1) history.back(); // AID es inválido
+        let tentative_idx = this.#states.findIndex(e2 => e2.aid == e.state.aid);
+        if (tentative_idx == -1) history.back(); // AID es inválido
         else {
           // AID es válido
-          this.#current_state_index = tentative_state.aid;
-          tentative_state.on_show();
+          let activity = this.#states[tentative_idx];
+          this.#current_state_index = tentative_idx;
+          console.log(activity);
+          this.#activity_show(activity.aid);
         }
       });
 
@@ -207,7 +212,7 @@ export default class Navi {
                   } else if (match_obj[1] == "path"){
                     new_regex += `(${match_obj[2]?("?<"+match_obj[2]+">"):""}[^<]+)`;
                   } else {
-                    throw new Error(`El patrón de URL de la actividad ${e} no reconoce variables de tipo ${match_obj[1]} .`);
+                    throw new Error(`El patrón de URL de la actividad ${e} no reconoce variables de tipo ${match_obj[1]}.`);
                   }
                   cad = cad.substring(match_obj[0].length);
                 } else {
@@ -223,10 +228,8 @@ export default class Navi {
       });
     })
     .then(() => {
-      // ...e iniciar la primera cuando todo esté listo
-      let activity_class = this.#activities_cache[acts[0].getAttribute("href")];
-      let activity_obj = this.#activity_create(activity_class);
-      this.#activity_show(activity_obj);
+      // ...determinar e iniciar la actividad a usar cuando todo esté listo
+      this.activity_call(location.hash.replace("#", "") || "");
     });
   }
 
@@ -234,15 +237,26 @@ export default class Navi {
   _views(){ return this.#views_cache; }
   _regexes(){ return this.#uri_regexes; }
   _states(){ return this.#states; }
+  _current_state(){ return this.#current_state_index; }
+  _aid_seq(){ return this.#aid_seq; }
 
   // Funciones de alto nivel: Navegación
   /**
    * Navega a una nueva actividad, en espera de devolver un resultado
-   * @param uri URI a visitar
+   * @param uri URI de la actividad a visitar
    */
   activity_call(uri){
+    // Procesar URI
+    let url = new URL(location.href);
+    let regex_activity = /^([A-Za-z0-9_-]*)(?:\?(.*))?$/;
+    let uri_match = regex_activity.exec(uri);
+    if (!uri_match) throw new Error(`La URI #${uri} no es válida`);
+    if (uri_match[1]) url.hash = uri_match[1];
+    url.search = uri_match[2] || "";
+    console.log(url);
+
     // Obtener clase a llamar
-    var activity_class = this.#get_view_by_uri(uri);
+    let activity_class = this.#get_view_by_uri(url.hash.replace("#", ""));
     if (!activity_class){
       console.error(`La URI #${uri} no puede ser procesada por ninguna actividad.`);
       return;
@@ -255,10 +269,10 @@ export default class Navi {
     }
 
     // Crear actividad
-    let aid = this.#activity_create(activity_class, new URLSearchParams(uri));
+    let aid = this.#activity_create(activity_class, url.searchParams, null);
     history.pushState({ "aid": aid }, null, "#"+uri);
     this.#activity_show(aid);
-    console.debug(`Actividad ${location.pathname}`);
+    console.debug(`Actividad ${url.hash}`);
   }
 
   /**
@@ -283,7 +297,7 @@ export default class Navi {
    * @return Clase de la actividad coincidente
    */
   #get_view_by_uri(uri){
-    return Object.entries(this.#activities_cache).find(e => uri.match(this.#uri_regexes[e[0]]))[1];
+    return Object.entries(this.#activities_cache).find(e => uri.match(this.#uri_regexes[e[0]]))?.[1];
   }
   
   #get_current_activity(){

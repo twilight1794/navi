@@ -111,29 +111,27 @@ export default class Navi {
 
     // Podemos omitir body
     if (!document.body)
-      document.documentElement.appendChild(document.createElement('body'));
+      document.documentElement.appendChild(document.createElement("body"));
 
     // Definir eventos
     if (!document.body.dataset.events){
       // Lanzado cuando el usuario se mueve en el historial
       window.addEventListener("popstate", (e) => {
         console.debug(`Evento popstate: ${e.state?.aid}`);
+        if (e.state && e.state.aid){
+          // AID especificado: es un cambio en el historial
 
-        // Comprobar si existe AID
-        // ↓ AID inespecificado: estoy entrando
-        if (!e.state || !e.state.aid) throw new Error("Estado inválido.");
-
-        // AID especificado: es un cambio en el mismo documento
-
-        // Validar AID
-        let tentative_idx = this.#states.findIndex(s => s.aid == e.state.aid);
-        if (tentative_idx == -1) history.back(); // AID es inválido
-        else {
-          // AID es válido
-          let activity = this.#states[tentative_idx];
-          this.#current_state_index = tentative_idx+1;
-          this.#activity_show(activity.aid);
+          let tentative_idx = this.#states.findIndex(s => s.aid == e.state.aid);
+          if (tentative_idx == -1) history.back(); // AID es inválido
+          else {
+            // AID es válido
+            let activity = this.#states[tentative_idx];
+            this.#current_state_index = tentative_idx+1;
+            this.#activity_show(activity.aid);
+          }
         }
+        // AID inespecificado: es una URI manual
+        else this.activity_go(location.hash.replace("#", "") || "");
       });
 
       // Lanzado cuando el tamaño de la pantalla cambie

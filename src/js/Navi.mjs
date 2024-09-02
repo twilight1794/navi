@@ -34,6 +34,7 @@ export default class Navi {
    * @param objs Objetos pasados por código
    */
   #activity_create(activity_class, params, objs){
+    console.debug(`Iniciando crear actividad ${activity_class.name}`);
     let aid = ++this.#aid_seq;
 
     // Crear instancia de actividad
@@ -54,6 +55,7 @@ export default class Navi {
    * @param aid AID de la actividad a mostrar
    */
   #activity_show(aid){
+    console.debug(`Iniciando mostrar actividad ${aid}`);
     let activity_obj = this.#states.find(e => aid == e.aid);
     let activity_elem = document.getElementById(`aid-${aid}`);
     if (!activity_elem){
@@ -73,6 +75,7 @@ export default class Navi {
    * @param aid AID de la actividad a mostrar
    */
   #activity_hide(aid){
+    console.debug(`Iniciando ocultar actividad ${aid}`);
     let activity_elem = document.querySelector("[aria-current='page']");
     if (activity_elem){
       activity_elem.ariaCurrent = undefined;
@@ -114,35 +117,33 @@ export default class Navi {
     if (!document.body.dataset.events){
       // Lanzado cuando el usuario se mueve en el historial
       window.addEventListener("popstate", (e) => {
-        console.debug(`popstate: ${e.state}`);
+        console.debug(`Evento popstate: ${e.state?.aid}`);
 
         // Comprobar si existe AID
-        if (!e.state || !e.state.aid){
-          // AID inespecificado: estoy entrando
-          console.log("Estado inválido.");
-          return;
-        }
+        // ↓ AID inespecificado: estoy entrando
+        if (!e.state || !e.state.aid) throw new Error("Estado inválido.");
+
         // AID especificado: es un cambio en el mismo documento
+
         // Validar AID
-        let tentative_idx = this.#states.findIndex(e2 => e2.aid == e.state.aid);
+        let tentative_idx = this.#states.findIndex(s => s.aid == e.state.aid);
         if (tentative_idx == -1) history.back(); // AID es inválido
         else {
           // AID es válido
           let activity = this.#states[tentative_idx];
-          this.#current_state_index = tentative_idx;
-          console.log(activity);
+          this.#current_state_index = tentative_idx+1;
           this.#activity_show(activity.aid);
         }
       });
 
       // Lanzado cuando el tamaño de la pantalla cambie
       window.addEventListener("resize", (e) => {
-        console.debug(`resize: ${window.innerWidth}, ${window.innerHeight}`);
+        console.debug(`Evento resize: ${window.innerWidth}, ${window.innerHeight}`);
       });
 
       // Lanzado cuando el esquema de colores cambie
       window.matchMedia("(prefers-color-scheme: dark)")
-      .addEventListener("change",({ matches }) => {
+      .addEventListener("Evento change",({ matches }) => {
         if (matches){
           console.debug("¡Cambiado a tema oscuro!");
         } else {

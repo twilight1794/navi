@@ -25,7 +25,7 @@ export default class Navi {
   // Funciones de bajo nivel
   //
   // Estas funciones no deben comprobar errores del usuario: en este punto, ya
-  // debe haberse validado la entrada del usuario
+  // se ha aceptado la petición de iniciar la nueva actividad
 
   /**
    * Crea una nueva instancia de una actividad
@@ -34,7 +34,6 @@ export default class Navi {
    * @param objs Objetos pasados por código
    */
   #activity_create(activity_class, params, objs){
-    //let params = new URLSearchParams(hash);
     let aid = ++this.#aid_seq;
 
     // Crear instancia de actividad
@@ -229,7 +228,7 @@ export default class Navi {
     })
     .then(() => {
       // ...determinar e iniciar la actividad a usar cuando todo esté listo
-      this.activity_call(location.hash.replace("#", "") || "");
+      this.activity_go(location.hash.replace("#", "") || "");
     });
   }
 
@@ -241,48 +240,43 @@ export default class Navi {
   _aid_seq(){ return this.#aid_seq; }
 
   // Funciones de alto nivel: Navegación
+
   /**
    * Navega a una nueva actividad, en espera de devolver un resultado
-   * @param uri URI de la actividad a visitar
+   * @param uri URI de la actividad a iniciar
    * @param objs Datos a pasar a la nueva actividad
    */
   activity_call(uri, objs){
-    console.debug(`Intentando llamar #${uri}.`);
-
-    // Procesar URI
-    let url = new URL(location.href);
-    let regex_activity = /^([A-Za-z0-9_-]*)(?:\?(.*))?$/;
-    let uri_match = regex_activity.exec(uri);
-    if (!uri_match) throw new Error(`La URI #${uri} no es válida`);
-    if (uri_match[1]) url.hash = uri_match[1];
-    url.search = uri_match[2] || "";
-
-    // Obtener clase a llamar
-    let activity_class = this.#get_view_by_uri(url.hash.replace("#", ""));
-    if (!activity_class) throw new Error(`La URI #${uri} no puede ser procesada por ninguna actividad.`);
-
-    //// Restricciones
-    // Comprobar que no exista otra instancia
-    if (activity_class.constructor.is_unique && !this.#states.every(e => e.constructor.name == activity_class)) throw new Error(`Ya has creado otra actividad de la clase ${activity_class}`);
+    console.debug(`Nueva petición de actividad: #${uri}.`);
+    // Comprobar
+    let url = this.#validate_uri(uri);
+    let activity_class = this.#validate_intent(url);
 
     // Crear actividad
     let aid = this.#activity_create(activity_class, url.searchParams, objs);
-    history.pushState({ "aid": aid }, null, "#"+uri);
+    history.pushState({ "aid": aid }, null, (uri?"#":"")+uri);
     this.#activity_show(aid);
   }
 
   /**
    * Navega a una nueva actividad, reemplazando la anterior
-   * @param uri URI de la actividad a visitar
+   * @param uri URI de la actividad a iniciar
    * @param objs Datos a pasar a la nueva actividad
    */
   activity_go(uri, objs){
-    
+    // Comprobar
+    let url = this.#validate_uri(uri);
+    let activity_class = this.#validate_intent(url);
+
+    // Crear actividad
+    let aid = this.#activity_create(activity_class, url.searchParams, objs);
+    history.replaceState({ "aid": aid }, null, (uri?"#":"")+uri);
+    this.#activity_show(aid);
   }
 
   /**
    * Regresa a la actividad anterior
-   * @param uri URI de la actividad a visitar
+   * @param uri URI de la actividad a iniciar
    * @param objs Datos a pasar a la nueva actividad
    */
   activity_return(uri, objs){
@@ -290,17 +284,40 @@ export default class Navi {
   }
 
   // Funciones auxiliares de bajo nivel
-  
+
   /**
-   * Dada una URI, devuelve la primera vista que declara procesarla
-   * @param uri URI a cotejar
-   * @return Clase de la actividad coincidente
+   * Comprueba que una URI sea sintácticamente válida para iniciar una actividad
+   * @param uri URI de la actividad a iniciar
+   * @return El objeto URL con los datos procesados
    */
-  #get_view_by_uri(uri){
-    return Object.entries(this.#activities_cache).find(e => uri.match(this.#uri_regexes[e[0]]))?.[1];
+  #validate_uri(uri){
+    let url = new URL(location.href);
+    let regex_activity = /^([A-Za-z0-9_-]*)(?:\?(.*))?$/;
+    let uri_match = regex_activity.exec(uri);
+    if (!uri_match) throw new Error(`La URI #${uri} no es válida`);
+    // ↓ Condicional para evitar # vacío
+    if (uri_match[1]) url.hash = uri_match[1];
+    url.search = uri_match[2] || "";
+    return url;
   }
-  
-  #get_current_activity(){
+
+  /**
+   * Comprueba si una petición para iniciar una nueva actividad es válida
+   * @param uri URI de la actividad a iniciar
+   * @return La clase de la cual crear la actividad
+   */
+  #validate_intent(url){
+    // Obtener clase a llamar
+    let activity_class = Object.entries(this.#activities_cache)
+      .find(e => url.hash.replace("#", "").match(this.#uri_regexes[e[0]]))?.[1];
+    if (!activity_class) throw new Error(`La URI ${url.hash} no puede ser procesada por ninguna actividad.`);
+
+    //// Restricciones
+    // Comprobar que no exista otra instancia
+    if (activity_class.constructor.is_unique && !this.#states.every(e => e.constructor.name == activity_class))
+      throw new Error(`Ya has creado otra actividad de la clase ${activity_class}`);
+
+    return activity_class;
   }
 }
 

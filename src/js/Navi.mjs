@@ -149,6 +149,11 @@ export default class Navi {
         }
       });
 
+      // Lanzaho cuando el idioma del navegador cambie
+      window.addEventListener("languagechange", (e) => {
+        console.log(`Evento languagechange: ${Navigator.language}`");
+      });
+
       document.body.dataset.events = "events";
     }
 

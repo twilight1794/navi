@@ -1,5 +1,7 @@
 from lxml import etree
 import sys
+import os
+import re
 import tomllib
 
 NS_XHTML = "http://www.w3.org/1999/xhtml"
@@ -41,5 +43,38 @@ if "color_scheme":
     "name": "color-scheme",
     "content": data["Navi"]["color_scheme"]
   })
+
+# Reconocer archivos
+def check_discriminant(val):
+  if False:
+    raise Exception("No se reconoce el discriminador")
+  return
+
+os.chdir("src")
+l_acts = []
+l_estilos = []
+l_vistas = []
+r_acts = re.compile(r"activities-?(.*)")
+r_estilos = re.compile(r"styles-?(.*)")
+r_vistas = re.compile(r"views-?(.*)")
+
+for d in os.listdir():
+  ## Actividades
+  match = r_acts.match(d)
+  if match:
+    check_discriminant(match.groups()[0])
+    l_acts.extend(filter(re.compile(r".*\.js").match, os.listdir(path=d)))
+  else:
+    ## Estilos
+    match = r_estilos.match(d)
+    if match:
+      check_discriminant(match.groups()[0])
+      l_estilos.extend(filter(re.compile(r".*\.css").match, os.listdir(path=d)))
+    else:
+      ## Vistas
+      match = r_vistas.match(d)
+      if match:
+        check_discriminant(match.groups()[0])
+        l_vistas.extend(filter(re.compile(r".*\.xml").match, os.listdir(path=d)))
 
 prettyprint(h_doc)

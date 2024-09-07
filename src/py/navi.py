@@ -6,9 +6,9 @@ import tomllib
 
 NS_XHTML = "http://www.w3.org/1999/xhtml"
 
-def prettyprint(element, **kwargs):
-  xml = etree.tostring(element, pretty_print=True, **kwargs)
-  print(xml.decode(), end='')
+def prettyprint(element):
+  xml = etree.tostring(element, xml_declaration=True, encoding="utf-8", pretty_print=True, doctype="<!DOCTYPE HTML>")
+  print(xml.decode(), end="")
 
 def ns_html(eti):
   return "{%s}%s" % ( NS_XHTML, eti )
@@ -44,16 +44,13 @@ if "color_scheme":
     "content": data["Navi"]["color_scheme"]
   })
 
-# Reconocer archivos
+# Reconocer objetos de texto
 def check_discriminant(val):
   if False:
     raise Exception("No se reconoce el discriminador")
   return
 
-os.chdir("src")
-l_acts = []
-l_estilos = []
-l_vistas = []
+os.chdir(os.path.join(sys.argv[1], "src"))
 r_acts = re.compile(r"activities-?(.*)")
 r_estilos = re.compile(r"styles-?(.*)")
 r_vistas = re.compile(r"views-?(.*)")
@@ -63,18 +60,30 @@ for d in os.listdir():
   match = r_acts.match(d)
   if match:
     check_discriminant(match.groups()[0])
-    l_acts.extend(filter(re.compile(r".*\.js").match, os.listdir(path=d)))
+    for e in filter(re.compile(r".*\.js").match, os.listdir(path=d)):
+      script = etree.SubElement(h_head, ns_html("script"), attrib={ "defer": "defer" })
+      with open(os.path.join(d, e), "r") as f:
+        script.text = etree.CDATA(f.read())
   else:
     ## Estilos
     match = r_estilos.match(d)
     if match:
       check_discriminant(match.groups()[0])
-      l_estilos.extend(filter(re.compile(r".*\.css").match, os.listdir(path=d)))
+      for e in filter(re.compile(r".*\.css").match, os.listdir(path=d)):
+        style = etree.SubElement(h_head, ns_html("style"))
+        with open(os.path.join(d, e), "r") as f:
+          style.text = etree.CDATA(f.read())
     else:
       ## Vistas
       match = r_vistas.match(d)
       if match:
         check_discriminant(match.groups()[0])
-        l_vistas.extend(filter(re.compile(r".*\.xml").match, os.listdir(path=d)))
+        for e in filter(re.compile(r".*\.xml").match, os.listdir(path=d)):
+          view = etree.SubElement(h_head, ns_html("template"), attrib={
+            "id": "view_"+e[:-4]
+          })
+          with open(os.path.join(d, e), "rb") as f:
+            view.append(etree.parse(f).getroot())
 
+etree.SubElement(h_doc, ns_html("body"))
 prettyprint(h_doc)

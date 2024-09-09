@@ -3,7 +3,7 @@
 /**
  * Clase para una actividad
  */
-export default class NaviActivity {
+class NaviActivity {
 
   constructor(aid, ctx){
     this.aid = aid; // AID = Activity ID

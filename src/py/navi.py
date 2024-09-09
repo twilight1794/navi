@@ -15,6 +15,8 @@ def ns_html(eti: str) -> str:
   return "{%s}%s" % ( NS_XHTML, eti )
 
 def check_discriminant(val: str) -> str:
+  if val == "":
+    return []
   r_disc_val = re.compile(r"^(xsm|sm|md|lg|xlg|xlg|port|land|night|day)(?:-(xsm|sm|md|lg|xlg|xlg|port|land|night|day))*$")
   r_disc_match = re.compile(r"(xsm|sm|md|lg|xlg|xlg|port|land|night|day)")
   if not r_disc_val.match(val):
@@ -23,7 +25,7 @@ def check_discriminant(val: str) -> str:
 
 def get_name(name: str) -> str:
   if name.find(".") > -1:
-    return name.rpartition(".")[2]
+    return name.rpartition(".")[0]
   return name
 
 def get_css_media_query(discriminant: list) -> str:
@@ -110,7 +112,7 @@ for e in filter(re.compile(r".*\.css").match, os.listdir()):
     style.text = etree.CDATA(f.read())
 
 # Reconocer objetos de texto
-os.chdir(os.path.join(sys.argv[1], "src"))
+os.chdir(os.path.join('../..', sys.argv[1], "src"))
 r_estilos = re.compile(r"styles-?(.*)")
 r_vistas = re.compile(r"views-?(.*)")
 r_imagenes = re.compile(r"images-?(.*)")
@@ -133,7 +135,10 @@ for d in os.listdir():
     for e in filter(re.compile(r".*\.css").match, os.listdir(path=d)):
       style = etree.SubElement(h_head, ns_html("style"))
       with open(os.path.join(d, e), "r") as f:
-        style_text = "@media (" + get_css_media_query(discriminants) + "){\n" + f.read() + "\n}"
+        if discriminants:
+          style_text = "@media (" + get_css_media_query(discriminants) + "){\n" + f.read() + "\n}"
+        else:
+          style_text = f.read()
         style.text = etree.CDATA(style_text)
     continue
   ## Vistas
@@ -150,13 +155,13 @@ for d in os.listdir():
   ## Imágenes
   match = r_imagenes.match(d)
   if match:
-    check_discriminant(match.groups()[0])
+    discriminants = check_discriminant(match.groups()[0])
     for e in filter(re.compile(r".*").match, os.listdir(path=d)):
       view = etree.SubElement(h_head, ns_html("link"), attrib={
         "rel": "navi:resource",
         "href": os.path.join(d, e),
-        "type": subprocess.run(["file", "-bi", e], capture_output=True).stdout.decode().partition(";")[0],
-        "media": match.groups()[0],
+        "type": subprocess.run(["file", "-bi", os.path.join(d, e)], capture_output=True).stdout.decode().partition(";")[0],
+        "data-media": ",".join(discriminants),
         "data-id": "@images/%s" % get_name(e)
       })
     continue

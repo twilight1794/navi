@@ -5,3 +5,4 @@
 *.gch
 *.pot
 dist
+__pycache__

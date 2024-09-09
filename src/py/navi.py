@@ -18,7 +18,7 @@ def check_discriminant(val: str) -> str:
   r_disc_val = re.compile(r"^(xsm|sm|md|lg|xlg|xlg|port|land|night|day)(?:-(xsm|sm|md|lg|xlg|xlg|port|land|night|day))*$")
   r_disc_match = re.compile(r"(xsm|sm|md|lg|xlg|xlg|port|land|night|day)")
   if not r_disc_val.match(val):
-    raise Exception("No se reconoce el discriminador")
+    raise Exception("No se reconoce el discriminador: %s" % val)
   return r_disc_match.findall(val)
 
 def get_name(name: str) -> str:
@@ -97,7 +97,7 @@ if "color_scheme":
   })
 
 # Archivos de Navi
-os.chdir(os.path.join(os.path.realpath(__file__), "js"))
+os.chdir(os.path.join(os.path.dirname(__file__), "../js"))
 for e in filter(re.compile(r".*\.js").match, os.listdir()):
   script = etree.SubElement(h_head, ns_html("script"), attrib={ "defer": "defer" })
   with open(e, "r") as f:
@@ -117,12 +117,14 @@ r_imagenes = re.compile(r"images-?(.*)")
 r_audios = re.compile(r"audios-?(.*)")
 r_videos = re.compile(r"videos-?(.*)")
 
-## Actividades0
-for e in os.listdir(path="activities"):
+## Actividades
+os.chdir("activities")
+for e in os.listdir():
   script = etree.SubElement(h_head, ns_html("script"), attrib={ "defer": "defer" })
-  with open(os.path.join(d, e), "r") as f:
+  with open(e, "r") as f:
     script.text = etree.CDATA(f.read())
 
+os.chdir("..")
 for d in os.listdir():
   ## Estilos
   match = r_estilos.match(d)

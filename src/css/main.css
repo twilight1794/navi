@@ -1,0 +1,8 @@
+// Estilos de Navi
+body {
+  height: 100vh;
+}
+
+body>:not([aria-current]){
+  display: none;
+}

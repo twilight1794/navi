@@ -17,8 +17,8 @@ def ns_html(eti: str) -> str:
 def check_discriminant(val: str) -> str:
   if val == "":
     return []
-  r_disc_val = re.compile(r"^(xsm|sm|md|lg|xlg|xlg|port|land|night|day)(?:-(xsm|sm|md|lg|xlg|xlg|port|land|night|day))*$")
-  r_disc_match = re.compile(r"(xsm|sm|md|lg|xlg|xlg|port|land|night|day)")
+  r_disc_val = re.compile(r"^(xxsm|xsm|sm|md|lg|xlg|xxlg|port|land|night|day)(?:-(xxsm|xsm|sm|md|lg|xlg|xxlg|port|land|night|day))*$")
+  r_disc_match = re.compile(r"(xxsm|xsm|sm|md|lg|xlg|xxlg|port|land|night|day)")
   if not r_disc_val.match(val):
     raise Exception("No se reconoce el discriminador: %s" % val)
   return r_disc_match.findall(val)
@@ -31,18 +31,20 @@ def get_name(name: str) -> str:
 def get_css_media_query(discriminant: list) -> str:
   # Condiciones de tamaño de pantalla
   l_size = []
+  if "xxsm" in discriminant:
+    l_size.append("(max-width: 639px)")
   if "xsm" in discriminant:
-    l_size.append("(max-width: 639)")
+    l_size.append("(max-width: 767px)")
   if "sm" in discriminant:
-    l_size.append("(max-width: 767)")
+    l_size.append("(max-width: 1023px)")
   if "md" in discriminant:
-    l_size.append("(max-width: 1023)")
+    l_size.append("(max-width: 1279px)")
   if "lg" in discriminant:
-    l_size.append("(max-width: 1279)")
+    l_size.append("(max-width: 1535px)")
   if "xlg" in discriminant:
-    l_size.append("(max-width: 1535)")
+    l_size.append("(max-width: 1919px)")
   if "xxlg" in discriminant:
-    l_size.append("(min-width: 1536)")
+    l_size.append("(min-width: 1920px)")
   d_size = " or ".join(l_size)
 
   # Condiciones de orientación
@@ -86,6 +88,9 @@ etree.SubElement(h_head, ns_html("meta"), attrib={
 })
 etree.SubElement(h_head, ns_html("meta"), attrib={ "charset": "utf-8" })
 
+if "main_activity" not in data["Navi"]:
+  raise Exception("Debes especificar una actividad de inicio")
+
 if "theme_color" in data["Navi"]:
   etree.SubElement(h_head, ns_html("meta"), attrib={
     "name": "theme-color",
@@ -101,7 +106,7 @@ if "color_scheme":
 # Archivos de Navi
 os.chdir(os.path.join(os.path.dirname(__file__), "../js"))
 for e in filter(re.compile(r".*\.js").match, os.listdir()):
-  script = etree.SubElement(h_head, ns_html("script"), attrib={ "defer": "defer" })
+  script = etree.SubElement(h_head, ns_html("script"))
   with open(e, "r") as f:
     script.text = etree.CDATA(f.read())
 
@@ -122,7 +127,10 @@ r_videos = re.compile(r"videos-?(.*)")
 ## Actividades
 os.chdir("activities")
 for e in os.listdir():
-  script = etree.SubElement(h_head, ns_html("script"), attrib={ "defer": "defer" })
+  script = etree.SubElement(h_head, ns_html("script"), attrib={
+    "defer": "defer",
+    "data-id": "@activity/%s" % get_name(e)
+  })
   with open(e, "r") as f:
     script.text = etree.CDATA(f.read())
 
@@ -144,10 +152,11 @@ for d in os.listdir():
   ## Vistas
   match = r_vistas.match(d)
   if match:
-    check_discriminant(match.groups()[0])
+    discriminants = check_discriminant(match.groups()[0])
     for e in filter(re.compile(r".*\.xml").match, os.listdir(path=d)):
       view = etree.SubElement(h_head, ns_html("template"), attrib={
-        "id": "view_"+e[:-4]
+        "data-media": ",".join(discriminants),
+        "data-id": "@view/%s" % get_name(e)
       })
       with open(os.path.join(d, e), "rb") as f:
         view.append(etree.parse(f).getroot())
@@ -162,7 +171,7 @@ for d in os.listdir():
         "href": os.path.join(d, e),
         "type": subprocess.run(["file", "-bi", os.path.join(d, e)], capture_output=True).stdout.decode().partition(";")[0],
         "data-media": ",".join(discriminants),
-        "data-id": "@images/%s" % get_name(e)
+        "data-id": "@image/%s" % get_name(e)
       })
     continue
 

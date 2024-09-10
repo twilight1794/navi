@@ -3,7 +3,7 @@
 /**
  * Clase para manejar una aplicación Navi
  */
-export default class Navi {
+class Navi {
   #activities_cache;
   #views_cache;
   #uri_regexes;
@@ -104,14 +104,10 @@ export default class Navi {
     activity_obj.on_destroy();
   }
 
-  async init(){
+  init(){
     // Preparar actividades
-    let acts = document.head.querySelectorAll("link[rel='navi:activity']");
+    let acts = document.head.querySelectorAll("script[data-id]");
     if (!acts.length) throw new Error("No hay actividades definidas");
-
-    // Podemos omitir body
-    if (!document.body)
-      document.documentElement.appendChild(document.createElement("body"));
 
     // Definir eventos
     if (!document.body.dataset.events){
@@ -149,39 +145,20 @@ export default class Navi {
         }
       });
 
-      // Lanzaho cuando el idioma del navegador cambie
+      // Lanzado cuando el idioma del navegador cambie
       window.addEventListener("languagechange", (e) => {
-        console.log(`Evento languagechange: ${Navigator.language}`");
+        console.log(`Evento languagechange: ${Navigator.language}`);
       });
 
       document.body.dataset.events = "events";
     }
 
-    // Por último, lo asíncrono:
-    // Descargar actividades...
-    Promise.all([
-      ...Array.from(acts).map(e => {
-        // Leer clase
-        let uri = e.getAttribute("href");
-        return import(`./src/activities/${uri}.js`)
-          // NOTE: Ver si podemos incluir validación acá
-          .then(obj_mod => this.#activities_cache[uri] = obj_mod.default )
-          .catch(() => console.error(`El módulo ${uri} no pudo ser importado.`) );
-      }),
-      ...Array.from(acts).map(e => {
-        // Preparar vistas
-        let uri = e.getAttribute("href");
-        return fetch(`./src/views/${uri}.xml`)
-          .then(response => response.text())
-          .then(text => {
-            // FIX: debería haber más validación acá
-            let obj_view = (new DOMParser()).parseFromString( text, "application/xml" );
-            this.#views_cache[uri] = obj_view;
-          })
-          .catch(() => console.error(`La vista base del módulo ${uri} no pudo ser importada`) );
-      })
-    ])
-    .then(() => {
+    // Guardar actividades
+    Array.from(document.head.querySelectorAll("script[data-id]")).forEach(e => {
+      let name = e.dataset.id.substring(10);
+      this.#activities_cache[name] = eval(name);
+    });
+    //.then(() => {
       Object.keys(this.#activities_cache).forEach(e => {
         //...generar las expresiones regulares...
         let pattern = this.#activities_cache[e].url_pattern;
@@ -229,19 +206,12 @@ export default class Navi {
           throw new Error("La función necesita una cadena o una instancia de RegExp.");
         }
       });
-    })
-    .then(() => {
+    //})
+    //.then(() => {
       // ...determinar e iniciar la actividad a usar cuando todo esté listo
       this.activity_go(location.hash.replace("#", "") || "");
-    });
+    //});
   }
-
-  _acts(){ return this.#activities_cache; }
-  _views(){ return this.#views_cache; }
-  _regexes(){ return this.#uri_regexes; }
-  _states(){ return this.#states; }
-  _current_state(){ return this.#current_state_index; }
-  _aid_seq(){ return this.#aid_seq; }
 
   // Funciones de alto nivel: Navegación
 
@@ -323,6 +293,29 @@ export default class Navi {
 
     return activity_class;
   }
-}
 
-export { Navi };
+  /**
+   * Devuelve el recurso más adecuado, según las circunstancias propuestas
+   * @param id Identificador del recurso (vista o archivo)
+   * @param media Discriminante contra el cual contrastar
+   * @return Elemento que representa al objeto
+   */
+  #get_resource(id, media){
+    let availables = document.head.querySelectorAll(`[data-id="${id}"]`);
+
+    // Obtener condiciones actuales
+    let cond_theme = window.matchMedia("(prefers-color-scheme: dark)").matches?"dark":"light";
+    let cond_orientation = window.matchMedia("(min-aspect-ratio: 1)")?"land":"port";
+    let cond_size;
+    if (window.matchMedia("(max-width: 639px)").matches) cond_size = "xxsm";
+    else if (window.matchMedia("(max-width: 767px)").matches) cond_size = "xsm";
+    else if (window.matchMedia("(max-width: 1023px)").matches) cond_size = "sm";
+    else if (window.matchMedia("(max-width: 1279px)").matches) cond_size = "md";
+    else if (window.matchMedia("(max-width: 1535px)").matches) cond_size = "lg";
+    else if (window.matchMedia("(max-width: 1919px)").matches) cond_size = "xlg";
+    else if (window.matchMedia("(min-width: 1920px)").matches) cond_size = "xxlg";
+
+    // Obtener 
+    
+   }
+}
